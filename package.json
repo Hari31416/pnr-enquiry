@@ -1,0 +1,11 @@
+{
+  "name": "pnr-enquiry",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "22.x" },
+  "packageManager": "pnpm@10.34.4",
+  "dependencies": {
+    "pngjs": "7.0.0",
+    "tough-cookie": "6.0.0"
+  }
+}
