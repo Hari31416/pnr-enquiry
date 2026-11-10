@@ -37,8 +37,8 @@
   :focus-visible { outline: 3px solid #a64d00; outline-offset: 3px; }
   p { margin: .65rem 0 0; }
   .note, footer { color: var(--muted); font-size: .9rem; }
-  #status { margin: 0; }
-  #status:not(:empty) { margin-top: 1rem; border-left: 3px solid #a64d00; padding-left: .75rem; }
+  .lookup-status { margin: 0; }
+  .lookup-status:not(:empty) { margin-top: 1rem; border-left: 3px solid #a64d00; padding-left: .75rem; }
   h2, h3, h4 { margin: 0; line-height: 1.2; }
   h2 { font: 400 clamp(1.7rem, 4vw, 2.25rem)/1.15 Georgia, serif; }
   h3 { font-size: 1.05rem; }
@@ -65,6 +65,7 @@
   .history-title, .pickers { display: flex; flex-wrap: wrap; align-items: end; gap: .7rem 1rem; justify-content: space-between; }
   .pickers { margin-top: 1rem; justify-content: start; }
   .pickers > div { min-width: 0; }
+  #refresh-saved { min-height: 2.5rem; padding-block: .3rem; }
   select { max-width: 100%; min-height: 2.5rem; font: inherit; color: var(--ink); background: white; border: 1px solid #6c786d; border-radius: .2rem; padding: .3rem .5rem; }
   .timeline { display: flex; gap: .6rem; list-style: none; overflow-x: auto; margin: .5rem 0 1.1rem; padding: 0 0 .35rem; }
   .timeline li { flex: 0 0 auto; max-width: min(16rem, 80%); padding: .45rem .6rem; border-top: 3px solid var(--status-color, var(--line)); background: #ede9d9; }
@@ -105,7 +106,7 @@
       </div>
       <p class="note" id="hint">Your PNR is sent to Indian Railways for this lookup.</p>
     </form>
-    <p id="status" role="status"></p>
+    <p id="status" class="lookup-status" role="status"></p>
     <p id="storage-note" class="note" role="status"></p>
     <section id="result" hidden aria-label="Railway response">
       <h2 id="result-title" tabindex="-1">Ticket status</h2>
@@ -125,11 +126,13 @@
         <label for="saved-pnr">PNR</label>
         <select id="saved-pnr"></select>
       </div>
+      <button id="refresh-saved" type="button">Refresh status</button>
       <div id="passenger-picker" hidden>
         <label for="saved-passenger">Passenger</label>
         <select id="saved-passenger"></select>
       </div>
     </div>
+    <p id="refresh-status" class="lookup-status" role="status"></p>
     <div id="history-charts">
       <h3>Status timeline</h3>
       <ol id="timeline" class="timeline" aria-label="Status timeline, oldest first"></ol>

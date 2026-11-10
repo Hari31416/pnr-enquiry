@@ -7,6 +7,8 @@ const pnr = el("pnr");
 const status = el("status");
 const result = el("result");
 const savedPnr = el("saved-pnr");
+const refresh = el("refresh-saved");
+const refreshStatus = el("refresh-status");
 const savedPassenger = el("saved-passenger");
 const clear = el("clear-history");
 
@@ -77,38 +79,41 @@ function updateCharts() {
   el("check-rows").replaceChildren(...rows);
 }
 
-async function run(body, pending) {
-  const controls = [pnr, el("check"), savedPnr, savedPassenger, clear];
+async function run(number, message = status) {
+  const controls = [pnr, el("check"), savedPnr, refresh, savedPassenger, clear];
   controls.forEach(control => { control.disabled = true; });
-  status.textContent = pending;
+  status.textContent = "";
+  refreshStatus.textContent = "";
+  message.textContent = "Checking reservation status…";
   try {
     const response = await fetch("/api/pnr", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ pnr: number }),
       signal: AbortSignal.timeout(30_000),
     });
     const payload = await response.json();
     if (!response.ok) {
-      status.textContent = payload.error || "The lookup failed. Try again.";
+      message.textContent = payload.error || "The lookup failed. Try again.";
     } else if (payload.data?.errorMessage && payload.data.errorMessage !== "0") {
-      status.textContent = String(payload.data.errorMessage);
+      message.textContent = String(payload.data.errorMessage);
     } else if (payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)) {
       const check = { at: Date.now(), data: ticketSnapshot(payload.data) };
-      showResult(body.pnr, check, payload.data);
-      status.textContent = "Ticket status updated.";
+      pnr.value = number;
+      showResult(number, check, payload.data);
+      message.textContent = "Ticket status updated.";
       try {
-        history = saveCheck(localStorage, body.pnr, check);
-        selectedPnr = body.pnr;
+        history = saveCheck(localStorage, number, check);
+        selectedPnr = number;
         updateHistory();
       } catch {
-        el("storage-note").textContent = "This lookup could not be saved in this browser.";
+        message.textContent = "Ticket status updated, but this browser could not save the check.";
       }
     } else {
-      status.textContent = "Indian Railways returned an unexpected response.";
+      message.textContent = "Indian Railways returned an unexpected response.";
     }
   } catch {
-    status.textContent = "Could not complete the lookup. Try again or use the official enquiry.";
+    message.textContent = "Could not complete the lookup. Try again or use the official enquiry.";
   } finally {
     controls.forEach(control => { control.disabled = false; });
   }
@@ -121,9 +126,13 @@ pnr.addEventListener("input", () => {
 
 el("lookup").addEventListener("submit", event => {
   event.preventDefault();
-  if (isPnr(pnr.value)) void run({ pnr: pnr.value }, "Checking reservation status…");
+  if (isPnr(pnr.value)) void run(pnr.value);
+});
+refresh.addEventListener("click", () => {
+  if (history[selectedPnr]) void run(selectedPnr, refreshStatus);
 });
 savedPnr.addEventListener("change", () => {
+  refreshStatus.textContent = "";
   selectedPnr = savedPnr.value;
   pnr.value = selectedPnr;
   status.textContent = "";
@@ -135,6 +144,7 @@ clear.addEventListener("click", () => {
   if (!window.confirm("Clear all saved PNR checks from this browser?")) return;
   try {
     clearHistory(localStorage);
+    refreshStatus.textContent = "";
     history = {};
     selectedPnr = "";
     if (shown?.saved) {
