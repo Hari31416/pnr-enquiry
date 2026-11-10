@@ -31,14 +31,21 @@ export function drawHistory(checks, id, timeline, chart) {
   for (const { at, passenger } of observations) {
     const status = currentStatus(passenger) || "Unavailable";
     const item = document.createElement("li");
+    item.className = "timeline-item";
     item.dataset.status = statusGroup(status);
-    const name = document.createElement("strong");
-    name.textContent = status;
+
+    const badge = document.createElement("span");
+    badge.className = "timeline-badge";
+    badge.dataset.status = statusGroup(status);
+    badge.textContent = status;
+
     const time = document.createElement("time");
+    time.className = "timeline-time";
     time.dateTime = new Date(at).toISOString();
     time.textContent = shortTime.format(at);
     time.title = formatTime(at);
-    item.append(name, time);
+
+    item.append(badge, time);
     timeline.append(item);
   }
 
@@ -48,11 +55,29 @@ export function drawHistory(checks, id, timeline, chart) {
   });
   const positions = points.filter(Boolean);
   if (!positions.length) {
-    chart.textContent = "A waitlist or RAC position will appear here when the railway reports one.";
+    const empty = document.createElement("div");
+    empty.className = "chart-empty-state";
+    const title = document.createElement("strong");
+    title.className = "chart-empty-title";
+    title.textContent = "No waitlist position recorded";
+    const note = document.createElement("p");
+    note.className = "note";
+    note.textContent = "This passenger has confirmed booking. RAC and waitlist positions will be plotted here if reported.";
+    empty.append(title, note);
+    chart.append(empty);
     return;
   }
   if (observations.length < 2) {
-    chart.textContent = "Check this PNR again to see how its queue position changes.";
+    const empty = document.createElement("div");
+    empty.className = "chart-empty-state";
+    const title = document.createElement("strong");
+    title.className = "chart-empty-title";
+    title.textContent = "Single check recorded";
+    const note = document.createElement("p");
+    note.className = "note";
+    note.textContent = "Check this PNR again over time to track waitlist position movements.";
+    empty.append(title, note);
+    chart.append(empty);
     return;
   }
 

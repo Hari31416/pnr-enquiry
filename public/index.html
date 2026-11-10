@@ -19,127 +19,738 @@
 <meta property="og:image:alt" content="PNR status check for Indian Railways">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-  :root { color-scheme: light; --paper: #f5f0e3; --ink: #142c27; --muted: #485b54; --line: #b6b9aa; --gold: #fac75e; }
+  :root {
+    color-scheme: light;
+    --paper: #f4efe2;
+    --card-bg: #fffdf8;
+    --ink: #142c27;
+    --ink-hover: #1c3c35;
+    --muted: #4e5f58;
+    --line: #cbcfbe;
+    --line-subtle: #e2e5d9;
+    --gold: #f5bc47;
+    --gold-deep: #b38228;
+    --shadow: 0 8px 28px rgba(20, 44, 39, 0.08);
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.55 "Avenir Next", "Trebuchet MS", sans-serif; }
-  main { width: min(100% - 2rem, 53rem); margin: clamp(1rem, 5vh, 4rem) auto 3rem; }
-  header { background: var(--ink); color: var(--paper); padding: clamp(1.4rem, 5vw, 2.5rem); border-bottom: .35rem solid var(--gold); }
-  .kicker { color: var(--gold); font: 700 .75rem/1.5 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; }
-  h1 { margin: .25em 0 .1em; font: 400 clamp(2.8rem, 8vw, 4.7rem)/1 Georgia, serif; letter-spacing: -.055em; }
-  header p { margin: .75rem 0 0; }
-  .ticket { padding: clamp(1.15rem, 5vw, 2.5rem); border: 1px solid var(--line); border-top: 0; background: #fffaf0; }
-  label { display: block; font-weight: 700; margin-bottom: .4rem; }
-  .lookup { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; }
-  input, button { font: inherit; border-radius: .2rem; min-height: 3rem; }
-  input { width: 100%; border: 1px solid #6c786d; background: white; color: var(--ink); padding: .55rem .7rem; font-family: ui-monospace, monospace; }
-  button { padding: .55rem 1rem; border: 1px solid var(--ink); background: var(--ink); color: white; font-weight: 700; cursor: pointer; }
-  button:disabled { opacity: .65; cursor: wait; }
-  :focus-visible { outline: 3px solid #a64d00; outline-offset: 3px; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 1rem/1.55 "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", "Trebuchet MS", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    width: min(100% - 2rem, 54rem);
+    margin: clamp(1rem, 4vh, 3.5rem) auto 3.5rem;
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+  }
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: clamp(1.4rem, 4.5vw, 2.5rem);
+    border-bottom: .35rem solid var(--gold);
+    position: relative;
+  }
+  .kicker {
+    color: var(--gold);
+    font: 700 .75rem/1.5 ui-monospace, "SF Mono", monospace;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .kicker::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+  h1 {
+    margin: .25em 0 .15em;
+    font: 400 clamp(2.6rem, 7vw, 4.2rem)/1 Georgia, serif;
+    letter-spacing: -.045em;
+  }
+  header p {
+    margin: .6rem 0 0;
+    color: #d1d9d4;
+    font-size: 1.02rem;
+    max-width: 38rem;
+  }
+  .ticket {
+    padding: clamp(1.25rem, 5vw, 2.5rem);
+    background: var(--card-bg);
+  }
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-weight: 700;
+    margin-bottom: .45rem;
+    font-size: .95rem;
+  }
+  .pnr-counter {
+    font-family: ui-monospace, monospace;
+    font-size: .85rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .lookup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .75rem;
+  }
+  input, button {
+    font: inherit;
+    border-radius: 6px;
+    min-height: 3.1rem;
+    transition: all .15s ease-in-out;
+  }
+  input {
+    width: 100%;
+    border: 1.5px solid #6b7a70;
+    background: white;
+    color: var(--ink);
+    padding: .6rem .85rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+  }
+  input::placeholder {
+    color: #93a097;
+    letter-spacing: normal;
+    font-weight: 400;
+    font-size: 1rem;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(20, 44, 39, 0.15);
+  }
+  button {
+    padding: .65rem 1.4rem;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: white;
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: .02em;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(20, 44, 39, 0.15);
+  }
+  button:hover:not(:disabled) {
+    background: var(--ink-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(20, 44, 39, 0.2);
+  }
+  button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(20, 44, 39, 0.15);
+  }
+  button:disabled {
+    opacity: .6;
+    cursor: wait;
+    transform: none;
+    box-shadow: none;
+  }
+  :focus-visible { outline: 3px solid var(--gold-deep); outline-offset: 3px; }
   p { margin: .65rem 0 0; }
   .note, footer { color: var(--muted); font-size: .9rem; }
-  .lookup-status { margin: 0; }
-  .lookup-status:not(:empty) { margin-top: 1rem; border-left: 3px solid #a64d00; padding-left: .75rem; }
-  h2, h3, h4 { margin: 0; line-height: 1.2; }
-  h2 { font: 400 clamp(1.7rem, 4vw, 2.25rem)/1.15 Georgia, serif; }
+  
+  .lookup-status {
+    margin: 0;
+    display: none;
+    padding: .65rem .9rem;
+    border-radius: 6px;
+    font-size: .92rem;
+    font-weight: 500;
+  }
+  .lookup-status:not(:empty) {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .9rem;
+  }
+  .lookup-status.loading {
+    background: #fbf5e7;
+    border: 1px solid #e7cca0;
+    color: #7b530f;
+  }
+  .lookup-status.success {
+    background: #e9f4ed;
+    border: 1px solid #a4d5b6;
+    color: #175735;
+  }
+  .lookup-status.error {
+    background: #faecea;
+    border: 1px solid #e6b2af;
+    color: #8c2a26;
+  }
+  
+  h2, h3, h4 { margin: 0; line-height: 1.25; }
+  h2 { font: 400 clamp(1.6rem, 3.8vw, 2.15rem)/1.18 Georgia, serif; }
   h3 { font-size: 1.05rem; }
-  #result { margin-top: 1.5rem; border-top: 1px dashed var(--line); padding-top: 1.3rem; }
-  #result-meta { margin: .35rem 0 1rem; }
-  .journey { background: #ede9d9; padding: 1.15rem; border-left: .25rem solid #b18530; }
-  .journey h3 { font-size: 1rem; overflow-wrap: anywhere; }
-  .route { margin: .25rem 0 .65rem; font: 400 clamp(1.7rem, 5vw, 2.6rem)/1.25 Georgia, serif; }
-  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.6rem), 1fr)); gap: .65rem 1rem; margin: .7rem 0 0; }
-  .facts dt { color: var(--muted); font-size: .82rem; }
-  .facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
-  .passenger-heading { margin: 1.1rem 0 .55rem; }
-  .passengers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .65rem; }
-  .passenger { border: 1px solid var(--line); padding: .8rem 1rem; }
-  .passenger-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; }
-  .passenger-status { color: var(--status-color, var(--ink)); }
-  [data-status="confirmed"] { --status-color: #286549; }
-  [data-status="rac"] { --status-color: #305e89; }
-  [data-status="waitlist"] { --status-color: #8a4519; }
-  [data-status="cancelled"] { --status-color: #9b332e; }
-  details { margin-top: 1rem; }
-  summary { cursor: pointer; }
-  .history { margin-top: 1.2rem; border-top: 1px solid var(--line); }
-  .history-title, .pickers { display: flex; flex-wrap: wrap; align-items: end; gap: .7rem 1rem; justify-content: space-between; }
-  .pickers { margin-top: 1rem; justify-content: start; }
-  .pickers > div { min-width: 0; }
-  #refresh-saved { min-height: 2.5rem; padding-block: .3rem; }
-  select { max-width: 100%; min-height: 2.5rem; font: inherit; color: var(--ink); background: white; border: 1px solid #6c786d; border-radius: .2rem; padding: .3rem .5rem; }
-  .timeline { display: flex; gap: .6rem; list-style: none; overflow-x: auto; margin: .5rem 0 1.1rem; padding: 0 0 .35rem; }
-  .timeline li { flex: 0 0 auto; max-width: min(16rem, 80%); padding: .45rem .6rem; border-top: 3px solid var(--status-color, var(--line)); background: #ede9d9; }
-  .timeline time { display: block; color: var(--muted); font-size: .8rem; }
-  .history h3 { margin-top: 1.2rem; }
-  .chart { margin-top: .4rem; }
-  .chart svg { display: block; width: 100%; height: auto; }
-  .chart text { fill: var(--muted); font: 15px "Avenir Next", sans-serif; }
-  .chart .grid-line { stroke: var(--line); }
-  .chart-legend { display: flex; gap: .4rem 1rem; flex-wrap: wrap; }
-  .chart-legend span::before { content: ""; display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--queue-color); margin-right: .35rem; }
-  .table-wrap { overflow-x: auto; margin-top: .45rem; }
-  table { width: 100%; border-collapse: collapse; text-align: left; }
-  th, td { padding: .35rem .65rem .35rem 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  th { color: var(--muted); font-size: .85rem; }
-  td .text-button { text-align: left; }
-  #storage-note:empty { display: none; }
-  pre { padding: .75rem; background: #ebe9dc; white-space: pre-wrap; overflow-wrap: anywhere; }
-  footer { margin-top: 1rem; display: flex; gap: .5rem 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-  a, .text-button { color: #1d5544; text-decoration: underline; text-underline-offset: .16em; }
-  .text-button { background: none; border: 0; padding: 0; min-height: 2rem; font-weight: 400; }
-  @media (max-width: 360px) { .lookup { grid-template-columns: 1fr; } }
+  
+  .ticket-cut {
+    margin: 2rem 0;
+    border-top: 2px dashed var(--line);
+    position: relative;
+  }
+  
+  #result {
+    margin-top: 1.5rem;
+    border-top: 2px dashed var(--line);
+    padding-top: 1.5rem;
+  }
+  #result-meta {
+    margin: .4rem 0 1.1rem;
+    display: inline-block;
+    background: #ebe6d7;
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    font-size: .84rem;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  
+  .journey {
+    background: #f4efe2;
+    padding: 1.25rem 1.4rem;
+    border-left: .32rem solid var(--gold-deep);
+    border-radius: 0 6px 6px 0;
+  }
+  .journey-header {
+    margin-bottom: .45rem;
+  }
+  .train-badge {
+    display: inline-block;
+    font-size: .9rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--ink);
+    background: #e6dfcd;
+    padding: .2rem .55rem;
+    border-radius: 4px;
+  }
+  .route-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: .6rem;
+    margin: .35rem 0 .75rem;
+    font: 400 clamp(1.8rem, 5vw, 2.7rem)/1.15 Georgia, serif;
+    letter-spacing: -.02em;
+  }
+  .route-station {
+    font-weight: 600;
+  }
+  .route-arrow {
+    color: var(--gold-deep);
+    font-weight: 300;
+    user-select: none;
+  }
+  
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.8rem), 1fr));
+    gap: .75rem 1rem;
+    margin: .85rem 0 0;
+  }
+  .facts dt {
+    color: var(--muted);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+  }
+  .facts dd {
+    margin: .15rem 0 0;
+    font-weight: 600;
+    font-size: .98rem;
+    overflow-wrap: anywhere;
+  }
+  
+  .passenger-header-wrap {
+    margin: 1.4rem 0 .7rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .passenger-heading {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .passengers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
+    gap: .85rem;
+  }
+  .passenger {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fffdfa;
+    padding: 1rem 1.15rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .passenger-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+    margin-bottom: .75rem;
+  }
+  .passenger-title h4 {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .passenger-status, .status-pill, .timeline-badge, .table-status-pill {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 999px;
+    font-size: .84rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+  [data-status="confirmed"] {
+    background: #e5f3eb;
+    border-color: #94c8a8;
+    color: #175b36;
+  }
+  [data-status="rac"] {
+    background: #e9f2fa;
+    border-color: #a0c4e4;
+    color: #1b5282;
+  }
+  [data-status="waitlist"] {
+    background: #fdf1e8;
+    border-color: #f1c29e;
+    color: #8d4215;
+  }
+  [data-status="cancelled"] {
+    background: #fbebe9;
+    border-color: #e6a9a5;
+    color: #982a25;
+  }
+  [data-status="other"] {
+    background: #ede9dc;
+    border-color: #b7bbaa;
+    color: #485b54;
+  }
+  
+  .seat-spotlight {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.3fr;
+    gap: .5rem;
+    background: #f6f2e6;
+    border: 1px solid #d9dccf;
+    border-radius: 6px;
+    padding: .6rem .75rem;
+    margin-bottom: .85rem;
+  }
+  .seat-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .seat-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .seat-val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-top: .1rem;
+    overflow-wrap: anywhere;
+  }
+  
+  .chart-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .15rem .55rem;
+    border-radius: 4px;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+  .chart-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .chart-prepared {
+    background: #e6f4ea;
+    color: #155724;
+    border: 1px solid #a3d9b4;
+  }
+  .chart-prepared::before { background: #28a745; }
+  .chart-unprepared {
+    background: #f9f5eb;
+    color: #7b591b;
+    border: 1px solid #e5d7b5;
+  }
+  .chart-unprepared::before { background: #d39e00; }
+  
+  details {
+    margin-top: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #f8f6ee;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    padding: .75rem 1rem;
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--ink);
+    user-select: none;
+    transition: background .12s ease;
+  }
+  summary:hover {
+    background: #ede9dc;
+  }
+  .response-box {
+    border-top: 1px solid var(--line);
+    background: #202b27;
+    color: #e4ebe7;
+  }
+  .response-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .45rem .85rem;
+    background: #17211e;
+    font-size: .8rem;
+    color: #9cb2a7;
+    font-family: ui-monospace, monospace;
+  }
+  .btn-copy {
+    background: #293833;
+    border: 1px solid #435b52;
+    color: #dbe4df;
+    font-size: .76rem;
+    padding: .25rem .6rem;
+    border-radius: 4px;
+    min-height: auto;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .btn-copy:hover {
+    background: #364b44;
+    transform: none;
+    box-shadow: none;
+  }
+  pre {
+    margin: 0;
+    padding: .85rem 1rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .84rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    max-height: 24rem;
+    overflow-y: auto;
+  }
+  
+  .history {
+    margin-top: 0;
+    border-top: 2px dashed var(--line);
+    background: #faf7ef;
+  }
+  .history-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .7rem 1rem;
+  }
+  
+  .saved-picker-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: .75rem 1rem;
+    margin: 1.1rem 0 .5rem;
+  }
+  .select-field {
+    display: flex;
+    flex-direction: column;
+    min-width: min(100%, 19rem);
+    flex: 1 1 auto;
+  }
+  .select-field label {
+    font-size: .84rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: .35rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .styled-select {
+    width: 100%;
+    min-height: 3rem;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink);
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23142c27' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .85rem center;
+    background-size: 12px;
+    border: 1.5px solid #6b7a70;
+    border-radius: 6px;
+    padding: .5rem 2.2rem .5rem .85rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all .15s ease;
+  }
+  .styled-select:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(20, 44, 39, 0.15);
+  }
+  #refresh-saved {
+    min-height: 3rem;
+    padding: .55rem 1.3rem;
+    font-size: .92rem;
+    white-space: nowrap;
+  }
+    border: 1.5px solid #6c786d;
+    border-radius: 6px;
+    padding: .3rem .7rem;
+  }
+  
+  .timeline {
+    display: flex;
+    gap: .75rem;
+    list-style: none;
+    overflow-x: auto;
+    margin: .6rem 0 1.25rem;
+    padding: .35rem 0 .6rem;
+  }
+  .timeline-item {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    background: #ede9dc;
+    padding: .6rem .8rem;
+    border-radius: 6px;
+    border-top: 3px solid var(--line);
+    min-width: 8rem;
+  }
+  .timeline-item[data-status="confirmed"] { border-top-color: #286549; }
+  .timeline-item[data-status="rac"] { border-top-color: #305e89; }
+  .timeline-item[data-status="waitlist"] { border-top-color: #8a4519; }
+  .timeline-item[data-status="cancelled"] { border-top-color: #9b332e; }
+  .timeline-time {
+    color: var(--muted);
+    font-size: .78rem;
+  }
+  
+  .chart {
+    margin-top: .5rem;
+  }
+  .chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #f7f4ec;
+    border-radius: 6px;
+    border: 1px solid var(--line-subtle);
+  }
+  .chart text {
+    fill: var(--muted);
+    font: 14px "Avenir Next", sans-serif;
+  }
+  .chart .grid-line {
+    stroke: var(--line);
+    stroke-dasharray: 2 2;
+  }
+  .chart-legend {
+    display: flex;
+    gap: .4rem 1rem;
+    flex-wrap: wrap;
+    margin-top: .45rem;
+  }
+  .chart-legend span::before {
+    content: "";
+    display: inline-block;
+    width: .55rem;
+    height: .55rem;
+    border-radius: 50%;
+    background: var(--queue-color);
+    margin-right: .35rem;
+  }
+  
+  .chart-empty-state {
+    padding: 1.15rem 1.3rem;
+    border-radius: 6px;
+    background: #f2eee3;
+    border: 1px dashed var(--line);
+  }
+  .chart-empty-title {
+    font-size: .95rem;
+    color: var(--ink);
+  }
+  
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: .6rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: .92rem;
+  }
+  th, td {
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--line-subtle);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  tbody tr:hover {
+    background: #fcfbf7;
+  }
+  th {
+    color: var(--muted);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    background: #f7f5ee;
+    border-bottom: 1px solid var(--line);
+  }
+  .table-date-btn {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: .86rem;
+    font-weight: 600;
+  }
+  
+  footer {
+    padding: 1rem clamp(1.25rem, 5vw, 2.5rem);
+    background: #ede9dc;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: .5rem 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+  a, .text-button {
+    color: #175735;
+    text-decoration: underline;
+    text-underline-offset: .18em;
+    cursor: pointer;
+  }
+  a:hover, .text-button:hover {
+    color: var(--ink);
+  }
+  .text-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    min-height: auto;
+    font-weight: 500;
+    box-shadow: none;
+  }
+  .text-button:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  @media (max-width: 520px) {
+    .lookup { grid-template-columns: 1fr; }
+    .seat-spotlight { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <div class="kicker">Indian Railways lookup</div>
+    <div class="kicker">Indian Railways Lookup</div>
     <h1>PNR enquiry</h1>
-    <p>Check your Indian Railways ticket status and track waitlist changes.</p>
+    <p>Check your Indian Railways ticket status, coach/berth details, and track waitlist changes.</p>
   </header>
   <section class="ticket" aria-label="Reservation lookup">
     <form id="lookup">
-      <label for="pnr">10-digit PNR number</label>
+      <label for="pnr">
+        <span>10-digit PNR number</span>
+        <span id="pnr-count" class="pnr-counter"></span>
+      </label>
       <div class="lookup">
-        <input id="pnr" type="text" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off" required aria-describedby="hint">
+        <input id="pnr" type="text" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" placeholder="e.g. 2845039247" autocomplete="off" required aria-describedby="hint">
         <button id="check">Check status</button>
       </div>
-      <p class="note" id="hint">Your PNR is sent to Indian Railways for this lookup.</p>
+      <p class="note" id="hint">Your PNR is sent directly to Indian Railways for this lookup.</p>
     </form>
     <p id="status" class="lookup-status" role="status"></p>
     <p id="storage-note" class="note" role="status"></p>
     <section id="result" hidden aria-label="Railway response">
       <h2 id="result-title" tabindex="-1">Ticket status</h2>
-      <p class="note" id="result-meta"></p>
+      <div id="result-meta"></div>
       <div id="summary"></div>
-      <details id="response-details"><summary>Show response details</summary><pre id="response"></pre></details>
+      <details id="response-details">
+        <summary>Show response details</summary>
+        <div class="response-box">
+          <div class="response-toolbar">
+            <span>Upstream IRCTC response</span>
+            <button id="copy-json" type="button" class="btn-copy">Copy JSON</button>
+          </div>
+          <pre id="response"></pre>
+        </div>
+      </details>
     </section>
   </section>
   <section class="ticket history" id="history" hidden aria-labelledby="history-title">
-    <div class="history-title">
+    <div class="history-header">
       <h2 id="history-title">Saved checks</h2>
       <button class="text-button" id="clear-history" type="button">Clear history</button>
     </div>
     <p class="note">Saved in this browser. Up to 40 checks per PNR for 30 days.</p>
-    <div class="pickers">
-      <div>
-        <label for="saved-pnr">PNR</label>
-        <select id="saved-pnr"></select>
+    <div class="saved-picker-grid">
+      <div class="select-field">
+        <label for="saved-pnr">Saved PNR</label>
+        <select id="saved-pnr" class="styled-select"></select>
       </div>
       <button id="refresh-saved" type="button">Refresh status</button>
-      <div id="passenger-picker" hidden>
+      <div id="passenger-picker" class="select-field" hidden>
         <label for="saved-passenger">Passenger</label>
-        <select id="saved-passenger"></select>
+        <select id="saved-passenger" class="styled-select"></select>
       </div>
     </div>
     <p id="refresh-status" class="lookup-status" role="status"></p>
     <div id="history-charts">
-      <h3>Status timeline</h3>
+      <h3 style="margin-top: 1.2rem;">Status timeline</h3>
       <ol id="timeline" class="timeline" aria-label="Status timeline, oldest first"></ol>
-      <h3>Queue position</h3>
+      <h3 style="margin-top: 1.2rem;">Queue position</h3>
       <div id="queue-chart" class="chart"></div>
     </div>
-    <h3>Past checks</h3>
+    <h3 style="margin-top: 1.4rem;">Past checks</h3>
     <p class="note">Select a date to reopen that ticket snapshot.</p>
     <div class="table-wrap">
       <table>
@@ -149,6 +760,7 @@
     </div>
   </section>
   <footer>
+    <span>PNR Enquiry for Indian Railways</span>
     <a href="https://www.indianrail.gov.in/enquiry/PNR/PnrEnquiry.html?locale=en" target="_blank" rel="noopener noreferrer">Open official enquiry ↗</a>
   </footer>
 </main>
