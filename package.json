@@ -4,6 +4,10 @@
   "type": "module",
   "engines": { "node": "22.x" },
   "packageManager": "pnpm@10.34.4",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
   "dependencies": {
     "pngjs": "7.0.0",
     "tough-cookie": "6.0.0"
