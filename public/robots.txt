@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /api/
+
+Sitemap: https://pnr-enquiry-phi.vercel.app/sitemap.xml
