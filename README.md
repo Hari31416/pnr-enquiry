@@ -1,6 +1,6 @@
 # PNR enquiry
 
-A small static page and one Vercel Node.js function. The browser sends a POST to its own origin. The function starts a fresh Indian Railways session, reads the arithmetic CAPTCHA and submits the PNR using the same session cookies. The app does not store PNRs or cookies.
+A small static page and one Vercel Node.js function. The browser sends a POST to its own origin. The function starts a fresh Indian Railways session, reads the arithmetic CAPTCHA and submits the PNR using the same session cookies. Successful checks are saved in browser local storage, grouped by PNR. The site keeps up to 20 PNRs and 40 checks per PNR, and shows checks from the last 30 days. Clear history removes the saved checks from that browser. Railway session cookies stay in memory for a single request.
 
 ## Deploy to Vercel
 

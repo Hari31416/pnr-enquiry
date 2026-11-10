@@ -9,7 +9,7 @@
   :root { color-scheme: light; --paper: #f5f0e3; --ink: #142c27; --muted: #485b54; --line: #b6b9aa; --gold: #fac75e; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.55 "Avenir Next", "Trebuchet MS", sans-serif; }
-  main { width: min(100% - 2rem, 38rem); margin: clamp(2rem, 11vh, 8rem) auto 3rem; }
+  main { width: min(100% - 2rem, 53rem); margin: clamp(1rem, 5vh, 4rem) auto 3rem; }
   header { background: var(--ink); color: var(--paper); padding: clamp(1.4rem, 5vw, 2.5rem); border-bottom: .35rem solid var(--gold); }
   .kicker { color: var(--gold); font: 700 .75rem/1.5 ui-monospace, monospace; letter-spacing: .18em; text-transform: uppercase; }
   h1 { margin: .25em 0 .1em; font: 400 clamp(2.8rem, 8vw, 4.7rem)/1 Georgia, serif; letter-spacing: -.055em; }
@@ -26,7 +26,49 @@
   .note, footer { color: var(--muted); font-size: .9rem; }
   #status { margin: 0; }
   #status:not(:empty) { margin-top: 1rem; border-left: 3px solid #a64d00; padding-left: .75rem; }
-  #result { margin-top: 1rem; }
+  h2, h3, h4 { margin: 0; line-height: 1.2; }
+  h2 { font: 400 clamp(1.7rem, 4vw, 2.25rem)/1.15 Georgia, serif; }
+  h3 { font-size: 1.05rem; }
+  #result { margin-top: 1.5rem; border-top: 1px dashed var(--line); padding-top: 1.3rem; }
+  #result-meta { margin: .35rem 0 1rem; }
+  .journey { background: #ede9d9; padding: 1.15rem; border-left: .25rem solid #b18530; }
+  .journey h3 { font-size: 1rem; overflow-wrap: anywhere; }
+  .route { margin: .25rem 0 .65rem; font: 400 clamp(1.7rem, 5vw, 2.6rem)/1.25 Georgia, serif; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.6rem), 1fr)); gap: .65rem 1rem; margin: .7rem 0 0; }
+  .facts dt { color: var(--muted); font-size: .82rem; }
+  .facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .passenger-heading { margin: 1.1rem 0 .55rem; }
+  .passengers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .65rem; }
+  .passenger { border: 1px solid var(--line); padding: .8rem 1rem; }
+  .passenger-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; }
+  .passenger-status { color: var(--status-color, var(--ink)); }
+  [data-status="confirmed"] { --status-color: #286549; }
+  [data-status="rac"] { --status-color: #305e89; }
+  [data-status="waitlist"] { --status-color: #8a4519; }
+  [data-status="cancelled"] { --status-color: #9b332e; }
+  details { margin-top: 1rem; }
+  summary { cursor: pointer; }
+  .history { margin-top: 1.2rem; border-top: 1px solid var(--line); }
+  .history-title, .pickers { display: flex; flex-wrap: wrap; align-items: end; gap: .7rem 1rem; justify-content: space-between; }
+  .pickers { margin-top: 1rem; justify-content: start; }
+  .pickers > div { min-width: 0; }
+  select { max-width: 100%; min-height: 2.5rem; font: inherit; color: var(--ink); background: white; border: 1px solid #6c786d; border-radius: .2rem; padding: .3rem .5rem; }
+  .timeline { display: flex; gap: .6rem; list-style: none; overflow-x: auto; margin: .5rem 0 1.1rem; padding: 0 0 .35rem; }
+  .timeline li { flex: 0 0 auto; max-width: min(16rem, 80%); padding: .45rem .6rem; border-top: 3px solid var(--status-color, var(--line)); background: #ede9d9; }
+  .timeline time { display: block; color: var(--muted); font-size: .8rem; }
+  .history h3 { margin-top: 1.2rem; }
+  .chart { margin-top: .4rem; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart text { fill: var(--muted); font: 15px "Avenir Next", sans-serif; }
+  .chart .grid-line { stroke: var(--line); }
+  .chart-legend { display: flex; gap: .4rem 1rem; flex-wrap: wrap; }
+  .chart-legend span::before { content: ""; display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--queue-color); margin-right: .35rem; }
+  .table-wrap { overflow-x: auto; margin-top: .45rem; }
+  table { width: 100%; border-collapse: collapse; text-align: left; }
+  th, td { padding: .35rem .65rem .35rem 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-size: .85rem; }
+  td .text-button { text-align: left; }
+  #storage-note:empty { display: none; }
   pre { padding: .75rem; background: #ebe9dc; white-space: pre-wrap; overflow-wrap: anywhere; }
   footer { margin-top: 1rem; display: flex; gap: .5rem 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; }
   a, .text-button { color: #1d5544; text-decoration: underline; text-underline-offset: .16em; }
@@ -51,11 +93,45 @@
       <p class="note" id="hint">Your PNR is sent to Indian Railways for this lookup.</p>
     </form>
     <p id="status" role="status"></p>
+    <p id="storage-note" class="note" role="status"></p>
     <section id="result" hidden aria-label="Railway response">
-      <strong>Railway response</strong>
+      <h2 id="result-title" tabindex="-1">Ticket status</h2>
+      <p class="note" id="result-meta"></p>
       <div id="summary"></div>
-      <details><summary>Show response details</summary><pre id="response"></pre></details>
+      <details id="response-details"><summary>Show response details</summary><pre id="response"></pre></details>
     </section>
+  </section>
+  <section class="ticket history" id="history" hidden aria-labelledby="history-title">
+    <div class="history-title">
+      <h2 id="history-title">Saved checks</h2>
+      <button class="text-button" id="clear-history" type="button">Clear history</button>
+    </div>
+    <p class="note">Saved in this browser. Up to 40 checks per PNR for 30 days.</p>
+    <div class="pickers">
+      <div>
+        <label for="saved-pnr">PNR</label>
+        <select id="saved-pnr"></select>
+      </div>
+      <div id="passenger-picker" hidden>
+        <label for="saved-passenger">Passenger</label>
+        <select id="saved-passenger"></select>
+      </div>
+    </div>
+    <div id="history-charts">
+      <h3>Status timeline</h3>
+      <ol id="timeline" class="timeline" aria-label="Status timeline, oldest first"></ol>
+      <h3>Queue position</h3>
+      <p class="note">Lower is better. Lines connect checks in the same queue.</p>
+      <div id="queue-chart" class="chart"></div>
+    </div>
+    <h3>Past checks</h3>
+    <p class="note">Select a date to reopen that ticket snapshot.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Checked</th><th scope="col">Passenger status</th><th scope="col">Chart status</th></tr></thead>
+        <tbody id="check-rows"></tbody>
+      </table>
+    </div>
   </section>
   <footer>
     <button class="text-button" id="probe" type="button">Test connection</button>
