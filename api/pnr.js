@@ -10,14 +10,13 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => null);
-  const probe = body?.probe === true && body.pnr === undefined;
-  if (!probe && (typeof body?.pnr !== "string" || !/^[0-9]{10}$/.test(body.pnr))) {
+  if (typeof body?.pnr !== "string" || !/^[0-9]{10}$/.test(body.pnr)) {
     return reply({ error: "Enter a 10-digit PNR." }, 400);
   }
 
   try {
-    const data = await checkRailway(probe ? undefined : body.pnr);
-    return probe ? reply({ connected: true }) : reply({ data });
+    const data = await checkRailway(body.pnr);
+    return reply({ data });
   } catch (error) {
     const message = error instanceof RailwayError
       ? error.message

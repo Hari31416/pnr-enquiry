@@ -6,7 +6,6 @@ const el = id => document.getElementById(id);
 const pnr = el("pnr");
 const status = el("status");
 const result = el("result");
-const probe = el("probe");
 const savedPnr = el("saved-pnr");
 const savedPassenger = el("saved-passenger");
 const clear = el("clear-history");
@@ -79,7 +78,7 @@ function updateCharts() {
 }
 
 async function run(body, pending) {
-  const controls = [pnr, el("check"), probe, savedPnr, savedPassenger, clear];
+  const controls = [pnr, el("check"), savedPnr, savedPassenger, clear];
   controls.forEach(control => { control.disabled = true; });
   status.textContent = pending;
   try {
@@ -92,8 +91,6 @@ async function run(body, pending) {
     const payload = await response.json();
     if (!response.ok) {
       status.textContent = payload.error || "The lookup failed. Try again.";
-    } else if (payload.connected) {
-      status.textContent = "Indian Railways responded and the CAPTCHA was readable. You can try a PNR lookup.";
     } else if (payload.data?.errorMessage && payload.data.errorMessage !== "0") {
       status.textContent = String(payload.data.errorMessage);
     } else if (payload.data && typeof payload.data === "object" && !Array.isArray(payload.data)) {
@@ -125,9 +122,6 @@ pnr.addEventListener("input", () => {
 el("lookup").addEventListener("submit", event => {
   event.preventDefault();
   if (isPnr(pnr.value)) void run({ pnr: pnr.value }, "Checking reservation status…");
-});
-probe.addEventListener("click", () => {
-  void run({ probe: true }, "Testing the railway connection…");
 });
 savedPnr.addEventListener("change", () => {
   selectedPnr = savedPnr.value;
