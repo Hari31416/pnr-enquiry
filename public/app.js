@@ -1,4 +1,4 @@
-import { clearHistory, currentStatus, isPnr, passengerId, readHistory, saveCheck } from "./history.js";
+import { clearHistory, currentStatus, isPnr, passengerId, readHistory, saveCheck, statusGroup } from "./history.js";
 import { drawHistory, formatTime, passengerChecks } from "./charts.js";
 import { node, renderTicket, ticketSnapshot } from "./ticket.js";
 
