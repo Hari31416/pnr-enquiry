@@ -72,7 +72,7 @@ function updateCharts() {
   const checks = history[selectedPnr];
   if (!checks || !checks.length) return;
   const id = savedPassenger.value || "1";
-  drawHistory(checks, id, el("timeline"), el("queue-chart"));
+  drawHistory(checks, id, el("queue-chart"));
   const rows = passengerChecks(checks, id).map(({ passenger }, index) => {
     const row = node("tr");
     const check = checks[index];
