@@ -6,7 +6,8 @@
   "packageManager": "pnpm@10.34.4",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "pngjs": "7.0.0",
