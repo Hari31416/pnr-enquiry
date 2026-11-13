@@ -64,7 +64,19 @@ export function queuePosition(passenger) {
   const raw = typeof passenger?.currentStatus === "string" ? passenger.currentStatus.trim() : "";
   const match = /^([A-Z]*WL|RAC)(?:\s*[/ -]\s*|\s+)(\d+)(?:\b|$)/i.exec(detail) ??
     (/^(?:[A-Z]*WL|RAC)$/i.test(detail) ? /^([A-Z]*WL|RAC)\s*[/ -]?\s*(\d+)$/i.exec(raw) : null);
-  if (!match) return null;
-  const position = Number(match[2]);
-  return Number.isSafeInteger(position) && position > 0 ? { queue: match[1].toUpperCase(), position } : null;
+  if (match) {
+    const position = Number(match[2]);
+    if (Number.isSafeInteger(position) && position > 0) {
+      return { queue: match[1].toUpperCase(), position };
+    }
+  }
+  if (
+    statusGroup(detail) === "confirmed" ||
+    statusGroup(raw) === "confirmed" ||
+    /^(?:CNF|CONFIRMED)\b/i.test(detail) ||
+    /^(?:CNF|CONFIRMED)\b/i.test(raw)
+  ) {
+    return { queue: "CNF", position: 0 };
+  }
+  return null;
 }

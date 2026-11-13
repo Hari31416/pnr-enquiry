@@ -9,7 +9,7 @@ export const formatTime = time => fullTime.format(time);
 function svg(tag, attributes, label) {
   const node = document.createElementNS(SVG, tag);
   for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
-  if (label) node.textContent = label;
+  if (label !== undefined && label !== null) node.textContent = String(label);
   return node;
 }
 
@@ -34,7 +34,10 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
 
   const points = observations.map(({ passenger, at, check }) => {
     const position = queuePosition(passenger);
-    const status = currentStatus(passenger) || (position ? `${position.queue}/${position.position}` : "");
+    let status = currentStatus(passenger);
+    if (!status && position) {
+      status = position.position === 0 ? position.queue : `${position.queue}/${position.position}`;
+    }
     return position ? { ...position, at, status, check } : null;
   });
   const positions = points.filter(Boolean);
@@ -43,10 +46,10 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
     empty.className = "chart-empty-state";
     const title = document.createElement("strong");
     title.className = "chart-empty-title";
-    title.textContent = "No waitlist position recorded";
+    title.textContent = "No queue position recorded";
     const note = document.createElement("p");
     note.className = "note";
-    note.textContent = "This passenger has confirmed booking. RAC and waitlist positions will be plotted here if reported.";
+    note.textContent = "RAC, waitlist, and confirmed positions will be plotted here if reported.";
     empty.append(title, note);
     chart.append(empty);
     return;
@@ -67,22 +70,31 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
 
   const queues = [...new Set(positions.map(point => point.queue))];
   const colors = ["#286549", "#a15322", "#305e89", "#734783"];
+  const getQueueColor = queue => {
+    if (queue === "CNF") return "#175b36";
+    const nonCnf = queues.filter(q => q !== "CNF");
+    const idx = nonCnf.indexOf(queue);
+    return colors[(idx >= 0 ? idx : 0) % colors.length];
+  };
   const width = 620, height = 188, left = 40, right = 18, top = 17, bottom = 40;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
   const firstTime = observations[0].at, lastTime = observations.at(-1).at;
-  const max = Math.max(3, ...positions.map(point => point.position));
+  const hasConfirmed = positions.some(point => point.position === 0);
+  const min = hasConfirmed ? 0 : 1;
+  const max = Math.max(min + 2, ...positions.map(point => point.position));
   const x = (time, index) => left + (firstTime === lastTime
     ? index / (observations.length - 1) : (time - firstTime) / (lastTime - firstTime)) * plotWidth;
-  // A lower queue number is better, so it is drawn higher.
-  const y = position => top + (position - 1) / (max - 1) * plotHeight;
+  // A lower queue number is better, so it is drawn higher. Confirmed is queue 0 at the top.
+  const y = position => top + (position - min) / (max - min) * plotHeight;
 
   const graphic = svg("svg", {
     viewBox: `0 0 ${width} ${height}`,
     role: "img",
     "aria-label": "Queue position over time. Hover or tap points to see status and time.",
   });
-  for (const tick of new Set([1, Math.ceil(max / 2), max])) {
+  const midTick = Math.round((max + min) / 2);
+  for (const tick of new Set([min, midTick, max])) {
     graphic.append(
       svg("line", { x1: left, x2: width - right, y1: y(tick), y2: y(tick), class: "grid-line" }),
       svg("text", { x: left - 8, y: y(tick) + 4, "text-anchor": "end" }, tick),
@@ -96,16 +108,16 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
     if (!point) continue;
-    const color = colors[queues.indexOf(point.queue) % colors.length];
+    const color = getQueueColor(point.queue);
     const previous = points[i - 1];
     const cx = x(point.at, i), cy = y(point.position);
-    if (previous?.queue === point.queue) {
+    if (previous && (previous.queue === point.queue || point.position === 0)) {
       graphic.append(svg("line", {
         x1: x(previous.at, i - 1),
         y1: y(previous.position),
         x2: cx,
         y2: cy,
-        stroke: color,
+        stroke: point.position === 0 ? getQueueColor("CNF") : color,
         "stroke-width": 2.5,
       }));
     }
@@ -129,24 +141,57 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
     if (!point) continue;
     const cx = x(point.at, index);
     const cy = y(point.position);
-    const color = colors[queues.indexOf(point.queue) % colors.length];
-    const item = { ...point, cx, cy, color, index };
+    const color = getQueueColor(point.queue);
+    const isConfirmed = point.position === 0;
+    const item = { ...point, cx, cy, color, index, isConfirmed };
     validPoints.push(item);
 
-    const circle = svg("circle", {
-      cx,
-      cy,
-      r: 4.5,
-      fill: color,
-      class: "chart-dot",
-      tabindex: "0",
-      role: "button",
-      "aria-label": `${point.status} at ${formatTime(point.at)}`,
-    });
-    circle.append(svg("title", {}, `${point.status} · ${formatTime(point.at)}`));
-    circle.addEventListener("focus", () => showHover(item));
-    circle.addEventListener("blur", hideHover);
-    graphic.append(circle);
+    if (isConfirmed) {
+      const group = svg("g", {
+        class: "chart-dot chart-confirmed-badge",
+        tabindex: "0",
+        role: "button",
+        "aria-label": `${point.status} (Confirmed) at ${formatTime(point.at)}`,
+      });
+      const bg = svg("circle", {
+        cx,
+        cy,
+        r: 7.5,
+        fill: color,
+        stroke: "#fffdf8",
+        "stroke-width": 1.5,
+        class: "chart-confirmed-bg",
+      });
+      const checkmark = svg("path", {
+        d: `M ${cx - 3.2} ${cy + 0.2} L ${cx - 0.8} ${cy + 2.6} L ${cx + 3.2} ${cy - 2}`,
+        fill: "none",
+        stroke: "#fffdf8",
+        "stroke-width": 1.75,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        class: "chart-confirmed-check",
+      });
+      group.append(bg, checkmark);
+      group.append(svg("title", {}, `${point.status} · ${formatTime(point.at)}`));
+      group.addEventListener("focus", () => showHover(item));
+      group.addEventListener("blur", hideHover);
+      graphic.append(group);
+    } else {
+      const circle = svg("circle", {
+        cx,
+        cy,
+        r: 4.5,
+        fill: color,
+        class: "chart-dot",
+        tabindex: "0",
+        role: "button",
+        "aria-label": `${point.status} at ${formatTime(point.at)}`,
+      });
+      circle.append(svg("title", {}, `${point.status} · ${formatTime(point.at)}`));
+      circle.addEventListener("focus", () => showHover(item));
+      circle.addEventListener("blur", hideHover);
+      graphic.append(circle);
+    }
   }
 
   const tooltip = document.createElement("div");
@@ -193,9 +238,11 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
     hoverHalo.setAttribute("cx", point.cx);
     hoverHalo.setAttribute("cy", point.cy);
     hoverHalo.setAttribute("stroke", point.color);
+    hoverHalo.setAttribute("r", point.isConfirmed ? "12" : "10");
     hoverDot.setAttribute("cx", point.cx);
     hoverDot.setAttribute("cy", point.cy);
     hoverDot.setAttribute("fill", point.color);
+    hoverDot.setAttribute("opacity", point.isConfirmed ? "0" : "1");
     hoverGuide.setAttribute("opacity", "1");
   }
 
@@ -262,10 +309,15 @@ export function drawHistory(checks, id, chartOrTimeline, maybeChart) {
 
   const legend = document.createElement("p");
   legend.className = "chart-legend note";
-  queues.forEach((queue, index) => {
+  queues.forEach(queue => {
     const entry = document.createElement("span");
-    entry.style.setProperty("--queue-color", colors[index % colors.length]);
-    entry.textContent = queue;
+    entry.style.setProperty("--queue-color", getQueueColor(queue));
+    if (queue === "CNF") {
+      entry.className = "chart-legend-confirmed";
+      entry.textContent = "CNF (Confirmed)";
+    } else {
+      entry.textContent = queue;
+    }
     legend.append(entry);
   });
   chart.append(graphic, tooltip, legend);

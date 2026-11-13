@@ -559,6 +559,19 @@
     r: 6.5;
     outline: none;
   }
+  .chart g.chart-confirmed-badge {
+    cursor: pointer;
+  }
+  .chart g.chart-confirmed-badge:focus-visible {
+    outline: none;
+  }
+  .chart .chart-confirmed-bg {
+    transition: r .15s ease;
+  }
+  .chart g.chart-confirmed-badge:hover .chart-confirmed-bg,
+  .chart g.chart-confirmed-badge:focus-visible .chart-confirmed-bg {
+    r: 9.5;
+  }
   .chart .chart-hover-elements {
     transition: opacity .15s ease;
   }
@@ -619,6 +632,18 @@
     height: .55rem;
     border-radius: 50%;
     background: var(--queue-color);
+    margin-right: .35rem;
+  }
+  .chart-legend span.chart-legend-confirmed::before {
+    width: .65rem;
+    height: .65rem;
+    background-color: var(--queue-color);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.5L4.8 8.8L9.5 3.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-size: 75%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    vertical-align: -1px;
     margin-right: .35rem;
   }
   
